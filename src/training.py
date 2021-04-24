@@ -13,6 +13,7 @@ import torch.nn.functional as F  # All functions that don't have any parameters
 from sklearn.metrics import accuracy_score
 
 from model import Net
+from loader import Tcr_pMhc_Dataset
 
 ###############################
 ###    Load data            ###
@@ -48,14 +49,30 @@ print("Percent positive samples in train:", p_neg)
 p_pos = len(y_val[y_val == 1])/len(y_val)*100
 print("Percent positive samples in val:", p_pos)
 
-# make the data set into one dataset that can go into dataloader
-train_ds = []
-for i in range(len(X_train)):
-    train_ds.append([np.transpose(X_train[i]), y_train[i]])
 
-val_ds = []
-for i in range(len(X_val)):
-    val_ds.append([np.transpose(X_val[i]), y_val[i]])
+X_train_div= []
+for i, seq in enumerate(X_train):
+  X_train_div.append([])
+  mhc = seq[:179]
+  p = seq[179:192]
+  pcr = seq[192:-1]
+  X_train_div[i].append(mhc)
+  X_train_div[i].append(p)
+  X_train_div[i].append(pcr)
+
+X_val_div= []
+for i, seq in enumerate(X_val):
+  X_val_div.append([])
+  mhc = seq[:179]
+  p = seq[179:192]
+  pcr = seq[192:-1]
+  X_val_div[i].append(mhc)
+  X_val_div[i].append(p)
+  X_val_div[i].append(pcr)
+
+# make the data set into one dataset that can go into dataloader
+train_ds = Tcr_pMhc_Dataset(X_train_div, y_train)
+val_ds = Tcr_pMhc_Dataset(X_val_div, y_val)
 
 bat_size = 64
 print("\nNOTE:\nSetting batch-size to", bat_size)
@@ -81,34 +98,7 @@ print("Initializing network")
 input_size = 420
 num_classes = 1
 learning_rate = 0.01
-
-# class Net(nn.Module):
-#     def __init__(self,  num_classes):
-#         super(Net, self).__init__()       
-#         self.conv1 = nn.Conv1d(in_channels=54, out_channels=100, kernel_size=3, stride=2, padding=1)
-#         torch.nn.init.kaiming_uniform_(self.conv1.weight)
-#         self.pool = nn.MaxPool1d(kernel_size=2, stride=2)
-#         self.conv1_bn = nn.BatchNorm1d(100)
-        
-#         self.conv2 = nn.Conv1d(in_channels=100, out_channels=100, kernel_size=3, stride=2, padding=1)
-#         torch.nn.init.kaiming_uniform_(self.conv2.weight)
-#         self.conv2_bn = nn.BatchNorm1d(100)
-        
-#         self.fc1 = nn.Linear(2600, num_classes)
-#         torch.nn.init.xavier_uniform_(self.fc1.weight)
-        
-#     def forward(self, x):      
-#         x = self.pool(F.relu(self.conv1(x)))
-#         x = self.conv1_bn(x)
-        
-#         x = self.pool(F.relu(self.conv2(x)))
-#         x = self.conv2_bn(x)
-        
-#         x = x.view(x.size(0), -1)
-#         x = torch.sigmoid(self.fc1(x))
-        
-#         return x
-    
+   
 # Initialize network
 net = Net(num_classes=num_classes).to(device)
 

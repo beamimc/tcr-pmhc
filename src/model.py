@@ -189,7 +189,7 @@ class Net(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         self.eval()
         step = self.step(batch)
-        if !step:
+        if not step:
             return None
         y, y_hat, _ = step
         return {
