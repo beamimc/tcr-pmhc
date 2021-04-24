@@ -58,8 +58,28 @@ p_pos = len(y_val[y_val == 1])/len(y_val)*100
 print("Percent positive samples in val:", p_pos)
 
 
-X_train_div= []
+X_train_aa=[]
 for i, seq in enumerate(X_train):
+  # aux.append([])
+  aux1= []
+  for j in range(0,420):
+    # aux1.append([])
+    aux1.append(X_train[i][j][:20])
+  X_train_aa.append(aux1)
+
+
+X_val_aa=[]
+for i, seq in enumerate(X_val):
+  # aux.append([])
+  aux1= []
+  for j in range(0,420):
+    # aux1.append([])
+    aux1.append(X_train[i][j][:20])
+  X_val_aa.append(aux1)
+
+
+X_train_div= []
+for i, seq in enumerate(X_train_aa):
   X_train_div.append([])
   mhc = seq[:179]
   p = seq[179:192]
@@ -69,7 +89,7 @@ for i, seq in enumerate(X_train):
   X_train_div[i].append(pcr)
 
 X_val_div= []
-for i, seq in enumerate(X_val):
+for i, seq in enumerate(X_val_aa):
   X_val_div.append([])
   mhc = seq[:179]
   p = seq[179:192]
