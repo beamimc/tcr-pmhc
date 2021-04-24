@@ -4,8 +4,9 @@ from torch.utils.data import Dataset, DataLoader
 
 class Tcr_pMhc_Dataset(Dataset):
 
-    def __init__(self, data):
+    def __init__(self, data, labels):
         self.data = data
+        self.labels = labels
         self.weight_factor = 3
 
     def __len__(self):
