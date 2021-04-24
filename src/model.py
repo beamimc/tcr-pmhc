@@ -224,27 +224,3 @@ class Net(pl.LightningModule):
         return torch.optim.Adam(self.parameters(), 
                                 lr = self.lr, 
                                 weight_decay = self.wd)
-
-    @pl.data_loader
-    def train_dataloader(self):
-        with open('Samples/' + self.dataset + '_train_samples.pickle', 'rb') as handle:
-            train = pickle.load(handle)
-        train_dataset = SignedPairsDataset(train, get_index_dicts(train))
-        return DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=10,
-                          collate_fn=lambda b: train_dataset.collate(b, tcr_encoding=self.tcr_encoding_model,
-                                                                     cat_encoding=self.cat_encoding))
-
-    @pl.data_loader
-    def val_dataloader(self):
-        with open('Samples/' + self.dataset + '_test_samples.pickle', 'rb') as handle:
-            test = pickle.load(handle)
-        with open('Samples/' + self.dataset + '_train_samples.pickle', 'rb') as handle:
-            train = pickle.load(handle)
-        test_dataset = SignedPairsDataset(test, get_index_dicts(train))
-        return DataLoader(test_dataset, batch_size=64, shuffle=False, num_workers=10,
-                          collate_fn=lambda b: test_dataset.collate(b, tcr_encoding=self.tcr_encoding_model,
-                                                                     cat_encoding=self.cat_encoding))
-
-    @pl.data_loader
-    def test_dataloader(self):
-        pass
