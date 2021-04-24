@@ -60,47 +60,52 @@ print("Percent positive samples in val:", p_pos)
 
 X_train_aa=[]
 for i, seq in enumerate(X_train):
-  # aux.append([])
   aux1= []
   for j in range(0,420):
-    # aux1.append([])
     aux1.append(X_train[i][j][:20])
   X_train_aa.append(aux1)
 
 
 X_val_aa=[]
 for i, seq in enumerate(X_val):
-  # aux.append([])
   aux1= []
   for j in range(0,420):
-    # aux1.append([])
     aux1.append(X_train[i][j][:20])
   X_val_aa.append(aux1)
 
 
-X_train_div= []
-for i, seq in enumerate(X_train_aa):
-  X_train_div.append([])
-  mhc = seq[:179]
-  p = seq[179:192]
-  pcr = seq[192:-1]
-  X_train_div[i].append(mhc)
-  X_train_div[i].append(p)
-  X_train_div[i].append(pcr)
+# X_train_div= []
+# for i, seq in enumerate(X_train_aa):
+#   X_train_div.append([])
+#   mhc = seq[:179]
+#   p = seq[179:192]
+#   tcr = seq[192:-1]
+#   X_train_div[i].append(mhc)
+#   X_train_div[i].append(p)
+#   X_train_div[i].append(pcr)
 
-X_val_div= []
-for i, seq in enumerate(X_val_aa):
-  X_val_div.append([])
-  mhc = seq[:179]
-  p = seq[179:192]
-  pcr = seq[192:-1]
-  X_val_div[i].append(mhc)
-  X_val_div[i].append(p)
-  X_val_div[i].append(pcr)
+# X_val_div= []
+# for i, seq in enumerate(X_val_aa):
+#   X_val_div.append([])
+#   mhc = seq[:179]
+#   p = seq[179:192]
+#   tcr = seq[192:-1]
+#   X_val_div[i].append(mhc)
+#   X_val_div[i].append(p)
+#   X_val_div[i].append(pcr)
 
 # make the data set into one dataset that can go into dataloader
-train_ds = Tcr_pMhc_Dataset(X_train_div, y_train)
-val_ds = Tcr_pMhc_Dataset(X_val_div, y_val)
+# train_ds = Tcr_pMhc_Dataset(X_train_div, y_train)
+# val_ds = Tcr_pMhc_Dataset(X_val_div, y_val)
+
+# make the data set into one dataset that can go into dataloader
+train_ds = []
+for i in range(len(X_train_aa)):
+    train_ds.append([np.transpose(X_train_aa[i]), y_train[i]])
+
+val_ds = []
+for i in range(len(X_val_aa)):
+    val_ds.append([np.transpose(X_val_aa[i]), y_val[i]])
 
 bat_size = 64
 print("\nNOTE:\nSetting batch-size to", bat_size)
@@ -112,7 +117,6 @@ val_ldr = torch.utils.data.DataLoader(val_ds,batch_size=bat_size, shuffle=True)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device (CPU/GPU):", device)
 #device = torch.device("cpu")
-
 
 
 
