@@ -1,5 +1,4 @@
 import glob
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,6 +13,15 @@ from sklearn.metrics import accuracy_score
 
 from model import Net
 from loader import Tcr_pMhc_Dataset
+
+from collections import namedtuple
+NetParams = namedtuple('NetParams', ['lr',
+                                     'wd',
+                                     'dropout',
+                                     'lstm_dim',
+                                     'aa_embedding_dim', 
+                                     'mhc_embedding_dim'
+                                    ])
 
 ###############################
 ###    Load data            ###
@@ -100,7 +108,9 @@ num_classes = 1
 learning_rate = 0.01
    
 # Initialize network
-net = Net(num_classes=num_classes).to(device)
+net_params = NetParams(1e-4, 0, 0.1, 500, 10, 50)
+print(net_params)
+net = Net(net_params).to(device)
 
 # Loss and optimizer
 criterion = nn.BCELoss()
@@ -128,11 +138,18 @@ for epoch in range(num_epochs):
     net.train()
     train_preds, train_targs = [], [] 
     for batch_idx, (data, target) in enumerate(train_ldr):
-        X_batch =  data.float().detach().requires_grad_(True)
+        print(data)
+        tcr_batch = data[2].float().detach().requires_grad_(True)
+        pep_batch = data[1].float().detach().requires_grad_(True)
+        mhc_batch = data[0].float().detach().requires_grad_(True)
+        print(len(data))
+        print(len(tcr_batch))
+        print(len(pep_batch))
+        print(len(mhc_batch))
         target_batch = torch.tensor(np.array(target), dtype = torch.float).unsqueeze(1)
         
         optimizer.zero_grad()
-        output = net(X_batch)
+        output = net(tcr_batch, pep_batch, mhc_batch)
         
         batch_loss = criterion(output, target_batch)
         batch_loss.backward()

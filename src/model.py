@@ -13,7 +13,7 @@ import torch.nn.functional as F  # All functions that don't have any parameters
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
-from pytorch_lightning.logging import TensorBoardLogger
+# from pytorch_lightning.logging import TensorBoardLogger
 from pytorch_lightning.callbacks import EarlyStopping
 from sklearn.metrics import accuracy_score, roc_auc_score, roc_curve
 
@@ -110,6 +110,7 @@ class LSTM_Encoder(nn.Module):
     def forward(self, seq, lengths):
         # Encoder:
         # Embedding
+        print(seq)
         embeds = self.embedding(seq)
         # LSTM Acceptor
         lstm_out = self.lstm_pass(self.lstm, embeds, lengths)
@@ -120,19 +121,20 @@ class LSTM_Encoder(nn.Module):
 
 
 class Net(pl.LightningModule):
-    def __init__(self, hparams):
+    def __init__(self, netparams):
         super(Net, self).__init__()
-        self.dataset = hparams.dataset
-        self.lr = hparams.lr # Learning rate
-        self.wd = hparams.wd # Weight decay
-        self.dropout_rate = hparams.dropout
-        self.lstm_dim = hparams.lstm_dim
-        self.aa_embedding_dim = hparams.aa_embedding_dim
-        self.mhc_embedding_dim = hparams.mhc_embedding_dim
+        # self.dataset = data
+        # self.data_loader = data_loader
+        self.lr = netparams.lr # Learning rate
+        self.wd = netparams.wd # Weight decay
+        self.dropout_rate = netparams.dropout
+        self.lstm_dim = netparams.lstm_dim
+        self.aa_embedding_dim = netparams.aa_embedding_dim
+        self.mhc_embedding_dim = netparams.mhc_embedding_dim
         # TCR Encoder
         self.tcr_encoder = LSTM_Encoder(self.aa_embedding_dim,
                                         self.lstm_dim, 
-                                        dropout)
+                                        self.dropout_rate)
         self.encoding_dim = self.lstm_dim
         # Peptide Encoder
         self.pep_encoder = LSTM_Encoder(self.aa_embedding_dim,
@@ -147,7 +149,7 @@ class Net(pl.LightningModule):
                 + self.encoding_dim \
                 + self.mhc_embedding_dim
         # MLP
-        mlp_dim_sqrt = int(sqrt(np.sqrt(self.mlp_dim)))
+        mlp_dim_sqrt = int(np.sqrt(self.mlp_dim))
         self.hidden_layer = nn.Linear(self.mlp_dim,
                                       mlp_dim_sqrt)
         self.relu = torch.nn.LeakyReLU()
@@ -156,8 +158,10 @@ class Net(pl.LightningModule):
 
     def forward(self, tcr_batch, pep_batch, mhc_batch):
         # TODO: Include energy values
-        tcr_encoding = self.tcr_encoder(*tcr_batch)
-        pep_encoding = self.pep_encoder(*pep_batch)
+        len_tcr = torch.sum((tcr_batch > 0).int(), dim = 1)
+        tcr_encoding = self.tcr_encoder(tcr_batch, len_tcr)
+        len_pep = torch.sum((pep_batch > 0).int(), dim = 1)
+        pep_encoding = self.pep_encoder(pep_batch, len_pep)
         mhc_embedding = self.mhc_embedding(mhc_batch)
         mlp_input = [
             pep_encoding,
@@ -224,3 +228,4 @@ class Net(pl.LightningModule):
         return torch.optim.Adam(self.parameters(), 
                                 lr = self.lr, 
                                 weight_decay = self.wd)
+

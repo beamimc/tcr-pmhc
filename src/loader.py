@@ -17,8 +17,8 @@ class Tcr_pMhc_Dataset(Dataset):
         tcr = datum[2]
         pep = datum[1]
         mhc = datum[0]
-        label = datum[3]
+        label = self.labels[idx]
         weight = 1
         if label > 0: 
             weight *= self.weight_factor 
-        return tcr, pep, mhc, label, weight
+        return (tcr, pep, mhc), label
