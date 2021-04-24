@@ -1,6 +1,6 @@
 # BiBa
 
-Our team is from ... and we think proteins are cool 🙌
+Our team is from Spain and we think proteins are cool 🙌
 
 ### Project Description
 We are working on the `tcr-pmhc` challenge.
